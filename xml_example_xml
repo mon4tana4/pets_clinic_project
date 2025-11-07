@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pet_clinic>
+  <metadata>
+    <saved_at>2024-01-15T10:30:00</saved_at>
+    <total_animals>1</total_animals>
+  </metadata>
+  <animals>
+    <animal type="Dog">
+      <animal_id>1</animal_id>
+      <name>Бобик</name>
+      <age>3</age>
+      <breed>Лабрадор</breed>
+      <owner>Иван Иванов</owner>
+      <health_status>Здоров</health_status>
+      <dog_size>Большой</dog_size>
+    </animal>
+  </animals>
+</pet_clinic>

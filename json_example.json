@@ -1,0 +1,18 @@
+{
+  "animals": [
+    {
+      "type": "Dog",
+      "animal_id": 1,
+      "name": "Бобик",
+      "age": 3,
+      "breed": "Лабрадор",
+      "owner": "Иван Иванов",
+      "health_status": "Здоров",
+      "dog_size": "Большой"
+    }
+  ],
+  "metadata": {
+    "saved_at": "2024-01-15T10:30:00",
+    "total_animals": 1
+  }
+}
