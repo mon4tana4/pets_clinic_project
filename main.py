@@ -1,4 +1,5 @@
-"""Первая лабораторная работа вариант 15"""
+"""Лабораторная работа №1. Вариант 15: Система учета домашних животных"""
+
 import json
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
@@ -6,28 +7,22 @@ from typing import List, Optional
 from datetime import datetime
 
 
-# Собственные исключения
 class AnimalError(Exception):
-    """Базовое исключение для ошибок с животными"""
     pass
 
 
 class AnimalNotFoundError(AnimalError):
-    """Исключение когда животное не найдено"""
     pass
 
 
 class InvalidAnimalDataError(AnimalError):
-    """Исключение при невалидных данных животного"""
     pass
 
 
 class FileOperationError(AnimalError):
-    """Исключение при операциях с файлами"""
     pass
 
 
-# Базовый абстрактный класс Animal
 class Animal(ABC):
     def __init__(self, animal_id: int, name: str, age: int, breed: str, owner: str, health_status: str = "Здоров"):
         self._validate_positive_int(animal_id, "ID")
@@ -44,28 +39,23 @@ class Animal(ABC):
         self.health_status = health_status
 
     def _validate_positive_int(self, value: int, field_name: str):
-        """Валидация положительных целых чисел"""
         if not isinstance(value, int) or value <= 0:
             raise InvalidAnimalDataError(f"{field_name} должен быть положительным целым числом")
 
     def _validate_string(self, value: str, field_name: str):
-        """Валидация строк"""
         if not isinstance(value, str) or not value.strip():
             raise InvalidAnimalDataError(f"{field_name} не может быть пустым")
 
     def display_info(self) -> str:
-        """Отображение информации о животном"""
         return (f"ID: {self.animal_id}, Имя: {self.name}, Возраст: {self.age}, "
                 f"Порода: {self.breed}, Владелец: {self.owner}, "
                 f"Состояние здоровья: {self.health_status}")
 
     @abstractmethod
     def make_sound(self) -> str:
-        """Абстрактный метод для издания звука"""
         pass
 
     def to_dict(self) -> dict:
-        """Преобразование объекта в словарь"""
         return {
             'type': self.__class__.__name__,
             'animal_id': self.animal_id,
@@ -79,12 +69,10 @@ class Animal(ABC):
 
     @abstractmethod
     def _specific_attributes(self) -> dict:
-        """Абстрактный метод для специфических атрибутов подклассов"""
         pass
 
     @classmethod
     def from_dict(cls, data: dict) -> 'Animal':
-        """Создание объекта из словаря"""
         animal_type = data.get('type')
         if animal_type == 'Dog':
             return Dog.from_dict(data)
@@ -96,7 +84,6 @@ class Animal(ABC):
             raise InvalidAnimalDataError(f"Неизвестный тип животного: {animal_type}")
 
 
-# Класс Собака
 class Dog(Animal):
     def __init__(self, animal_id: int, name: str, age: int, breed: str, owner: str,
                  health_status: str = "Здоров", dog_size: str = "Средний"):
@@ -105,7 +92,6 @@ class Dog(Animal):
         self.dog_size = dog_size
 
     def _validate_dog_size(self, size: str):
-        """Валидация размера собаки"""
         valid_sizes = ["Маленький", "Средний", "Большой"]
         if size not in valid_sizes:
             raise InvalidAnimalDataError(f"Размер собаки должен быть одним из: {valid_sizes}")
@@ -129,7 +115,6 @@ class Dog(Animal):
         )
 
 
-# Класс Кошка
 class Cat(Animal):
     def __init__(self, animal_id: int, name: str, age: int, breed: str, owner: str,
                  health_status: str = "Здоров", is_indoor: bool = True):
@@ -155,7 +140,6 @@ class Cat(Animal):
         )
 
 
-# Класс Птица
 class Bird(Animal):
     def __init__(self, animal_id: int, name: str, age: int, breed: str, owner: str,
                  health_status: str = "Здоров", wingspan: float = 0.0):
@@ -164,7 +148,6 @@ class Bird(Animal):
         self.wingspan = wingspan
 
     def _validate_wingspan(self, wingspan: float):
-        """Валидация размаха крыльев"""
         if not isinstance(wingspan, (int, float)) or wingspan < 0:
             raise InvalidAnimalDataError("Размах крыльев должен быть неотрицательным числом")
 
@@ -187,22 +170,18 @@ class Bird(Animal):
         )
 
 
-# Класс Ветеринарная клиника
 class PetClinic:
     def __init__(self):
         self.animals: List[Animal] = []
         self._next_id = 1
 
     def _get_next_id(self) -> int:
-        """Получение следующего ID для нового животного"""
         current_id = self._next_id
         self._next_id += 1
         return current_id
 
     def add_animal(self, animal: Animal) -> None:
-        """Добавление животного в клинику"""
         try:
-            # Проверяем, нет ли животного с таким ID
             for existing_animal in self.animals:
                 if existing_animal.animal_id == animal.animal_id:
                     raise InvalidAnimalDataError(f"Животное с ID {animal.animal_id} уже существует")
@@ -214,7 +193,6 @@ class PetClinic:
             raise AnimalError(f"Ошибка при добавлении животного: {str(e)}")
 
     def remove_animal(self, animal_id: int) -> bool:
-        """Удаление животного по ID"""
         try:
             for i, animal in enumerate(self.animals):
                 if animal.animal_id == animal_id:
@@ -230,7 +208,6 @@ class PetClinic:
             raise AnimalError(f"Ошибка при удалении животного: {str(e)}")
 
     def find_animal_by_id(self, animal_id: int) -> Optional[Animal]:
-        """Поиск животного по ID"""
         try:
             for animal in self.animals:
                 if animal.animal_id == animal_id:
@@ -240,14 +217,12 @@ class PetClinic:
             raise AnimalError(f"Ошибка при поиске животного: {str(e)}")
 
     def find_animals_by_owner(self, owner: str) -> List[Animal]:
-        """Поиск животных по владельцу"""
         try:
             return [animal for animal in self.animals if animal.owner.lower() == owner.lower()]
         except Exception as e:
             raise AnimalError(f"Ошибка при поиске животных по владельцу: {str(e)}")
 
     def display_all_animals(self) -> None:
-        """Отображение всех животных"""
         if not self.animals:
             print("В клинике нет животных.")
             return
@@ -259,7 +234,6 @@ class PetClinic:
             print("-" * 50)
 
     def save_to_json(self, filename: str) -> None:
-        """Сохранение данных в JSON файл"""
         try:
             data = {
                 'animals': [animal.to_dict() for animal in self.animals],
@@ -278,7 +252,6 @@ class PetClinic:
             raise FileOperationError(f"Ошибка при сохранении в JSON: {str(e)}")
 
     def load_from_json(self, filename: str) -> None:
-        """Загрузка данных из JSON файла"""
         try:
             with open(filename, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -288,7 +261,6 @@ class PetClinic:
                 animal = Animal.from_dict(animal_data)
                 self.animals.append(animal)
 
-            # Обновляем следующий ID
             if self.animals:
                 max_id = max(animal.animal_id for animal in self.animals)
                 self._next_id = max_id + 1
@@ -301,7 +273,6 @@ class PetClinic:
             raise FileOperationError(f"Ошибка при загрузке из JSON: {str(e)}")
 
     def save_to_xml(self, filename: str) -> None:
-        """Сохранение данных в XML файл"""
         try:
             root = ET.Element('pet_clinic')
             metadata = ET.SubElement(root, 'metadata')
@@ -320,7 +291,6 @@ class PetClinic:
                 ET.SubElement(animal_elem, 'owner').text = animal.owner
                 ET.SubElement(animal_elem, 'health_status').text = animal.health_status
 
-                # Специфические атрибуты
                 if isinstance(animal, Dog):
                     ET.SubElement(animal_elem, 'dog_size').text = animal.dog_size
                 elif isinstance(animal, Cat):
@@ -337,7 +307,6 @@ class PetClinic:
             raise FileOperationError(f"Ошибка при сохранении в XML: {str(e)}")
 
     def load_from_xml(self, filename: str) -> None:
-        """Загрузка данных из XML файла"""
         try:
             tree = ET.parse(filename)
             root = tree.getroot()
@@ -356,7 +325,6 @@ class PetClinic:
                     'health_status': animal_elem.find('health_status').text
                 }
 
-                # Загрузка специфических атрибутов
                 if animal_type == 'Dog':
                     animal_data['dog_size'] = animal_elem.find('dog_size').text
                 elif animal_type == 'Cat':
@@ -367,7 +335,6 @@ class PetClinic:
                 animal = Animal.from_dict(animal_data)
                 self.animals.append(animal)
 
-            # Обновляем следующий ID
             if self.animals:
                 max_id = max(animal.animal_id for animal in self.animals)
                 self._next_id = max_id + 1
@@ -380,9 +347,7 @@ class PetClinic:
             raise FileOperationError(f"Ошибка при загрузке из XML: {str(e)}")
 
 
-# Функции для пользовательского интерфейса
 def display_menu():
-    """Отображение меню"""
     print("\n" + "=" * 50)
     print("         ВЕТЕРИНАРНАЯ КЛИНИКА 'ДОМАШНИЕ ПИТОМЦЫ'")
     print("=" * 50)
@@ -400,7 +365,6 @@ def display_menu():
 
 
 def get_animal_input(clinic: PetClinic) -> Animal:
-    """Ввод данных животного"""
     print("\nВыберите тип животного:")
     print("1. Собака")
     print("2. Кошка")
@@ -413,14 +377,14 @@ def get_animal_input(clinic: PetClinic) -> Animal:
                 print("Пожалуйста, выберите 1, 2 или 3")
                 continue
 
-            animal_id = clinic._get_next_id()
+            animal_id = 1000 + len(clinic.animals)
             name = input("Имя животного: ").strip()
             age = int(input("Возраст: "))
             breed = input("Порода: ").strip()
             owner = input("Владелец: ").strip()
             health_status = input("Состояние здоровья (по умолчанию 'Здоров'): ").strip() or "Здоров"
 
-            if choice == '1':  # Собака
+            if choice == '1':
                 print("Размер собаки:")
                 print("1. Маленький")
                 print("2. Средний")
@@ -431,12 +395,12 @@ def get_animal_input(clinic: PetClinic) -> Animal:
 
                 return Dog(animal_id, name, age, breed, owner, health_status, dog_size)
 
-            elif choice == '2':  # Кошка
+            elif choice == '2':
                 indoor = input("Домашняя кошка? (да/нет): ").strip().lower()
                 is_indoor = indoor in ['да', 'д', 'yes', 'y']
                 return Cat(animal_id, name, age, breed, owner, health_status, is_indoor)
 
-            elif choice == '3':  # Птица
+            elif choice == '3':
                 wingspan = float(input("Размах крыльев (см): "))
                 return Bird(animal_id, name, age, breed, owner, health_status, wingspan)
 
@@ -447,10 +411,8 @@ def get_animal_input(clinic: PetClinic) -> Animal:
 
 
 def main():
-    """Главная функция программы"""
     clinic = PetClinic()
 
-    # Добавим несколько тестовых животных
     try:
         clinic.add_animal(Dog(1, "Бобик", 3, "Лабрадор", "Иван Иванов", "Здоров", "Большой"))
         clinic.add_animal(Cat(2, "Мурка", 2, "Сиамская", "Мария Петрова", "Здорова", True))
@@ -463,21 +425,21 @@ def main():
             display_menu()
             choice = input("Выберите действие: ").strip()
 
-            if choice == '1':  # Добавить животное
+            if choice == '1':
                 try:
                     animal = get_animal_input(clinic)
                     clinic.add_animal(animal)
                 except AnimalError as e:
                     print(f"Ошибка: {e}")
 
-            elif choice == '2':  # Удалить животное
+            elif choice == '2':
                 try:
                     animal_id = int(input("Введите ID животного для удаления: "))
                     clinic.remove_animal(animal_id)
                 except (ValueError, AnimalError) as e:
                     print(f"Ошибка: {e}")
 
-            elif choice == '3':  # Найти по ID
+            elif choice == '3':
                 try:
                     animal_id = int(input("Введите ID животного: "))
                     animal = clinic.find_animal_by_id(animal_id)
@@ -492,7 +454,7 @@ def main():
                 except AnimalError as e:
                     print(f"Ошибка: {e}")
 
-            elif choice == '4':  # Найти по владельцу
+            elif choice == '4':
                 try:
                     owner = input("Введите имя владельца: ").strip()
                     animals = clinic.find_animals_by_owner(owner)
@@ -505,38 +467,38 @@ def main():
                 except AnimalError as e:
                     print(f"Ошибка: {e}")
 
-            elif choice == '5':  # Показать всех
+            elif choice == '5':
                 clinic.display_all_animals()
 
-            elif choice == '6':  # Сохранить в JSON
+            elif choice == '6':
                 try:
                     filename = input("Введите имя файла (по умолчанию animals.json): ").strip() or "animals.json"
                     clinic.save_to_json(filename)
                 except FileOperationError as e:
                     print(f"Ошибка: {e}")
 
-            elif choice == '7':  # Загрузить из JSON
+            elif choice == '7':
                 try:
                     filename = input("Введите имя файла (по умолчанию animals.json): ").strip() or "animals.json"
                     clinic.load_from_json(filename)
                 except FileOperationError as e:
                     print(f"Ошибка: {e}")
 
-            elif choice == '8':  # Сохранить в XML
+            elif choice == '8':
                 try:
                     filename = input("Введите имя файла (по умолчанию animals.xml): ").strip() or "animals.xml"
                     clinic.save_to_xml(filename)
                 except FileOperationError as e:
                     print(f"Ошибка: {e}")
 
-            elif choice == '9':  # Загрузить из XML
+            elif choice == '9':
                 try:
                     filename = input("Введите имя файла (по умолчанию animals.xml): ").strip() or "animals.xml"
                     clinic.load_from_xml(filename)
                 except FileOperationError as e:
                     print(f"Ошибка: {e}")
 
-            elif choice == '0':  # Выход
+            elif choice == '0':
                 print("До свидания!")
                 break
 
